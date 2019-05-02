@@ -57,7 +57,7 @@ class RestaurantModel(db.Model):
         return RestaurantModel.query.all()
 
     @staticmethod
-    def get_one_Rrestaurant(id):
+    def get_one_restaurant(id):
         """
         Show Restaurant by id
         :param id: Restaurant id
