@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: reviews-app
+  labels:
+    app: reviews-app
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: reviews-app
+    spec:
+      containers:
+      - image: postgres:latest
+        imagePullPolicy: Always
+        name: postgres
+        ports:
+          - containerPort: 5432
+        env:
+            - name: POSTGRES_USER
+              value: admin
+            - name: POSTGRES_PASSWORD
+              value: password
+            - name: POSTGRES_DB
+              value: restaurant_reviews

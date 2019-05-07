@@ -4,8 +4,20 @@ import os
 class BaseConfig(object):
     DEBUG = False
     TESTING = False
-    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
+
+    POSTGRES_USER = os.environ.get('POSTGRES_USER', 'galina')
+    POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD', '')
+    POSTGRES_DB = os.environ.get('POSTGRES_DB', 'restaurant_reviews')
+    POSTGRES_HOST = os.environ.get('POSTGRES_HOST', 'localhost')
+
+    POSTGRES_STRING = 'postgresql://{user}:{password}@{uri}:5432/{database}'.format(
+        user=POSTGRES_USER,
+        password=POSTGRES_PASSWORD,
+        uri=POSTGRES_HOST,
+        database=POSTGRES_DB
+    )
+
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', POSTGRES_STRING)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
