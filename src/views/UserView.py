@@ -32,6 +32,10 @@ def create():
 
 @user_api.route('/', methods=['GET'])
 def get_all():
+    """
+    Get all users
+    :return: list of all users
+    """
     users = UserModel.get_all_users()
     ser_users = user_schema.dump(users, many=True).data
     return custom_response(ser_users, 200)
@@ -44,14 +48,14 @@ def get_user(user_id):
     """
     user = UserModel.get_one_user(user_id)
     if not user:
-        return custom_response({'error': 'user not found'}, 404)
+        return custom_response({'error': 'User not found.'}, 404)
 
     ser_user = user_schema.dump(user).data
     return custom_response(ser_user, 200)
 
 
 @user_api.route('/<int:user_id>', methods=['PUT'])
-def update():
+def update(user_id):
     """
     Update a user
     """
@@ -60,20 +64,22 @@ def update():
     if error:
         return custom_response(error, 400)
 
-    user = UserModel.get_one_user(g.user.get('id'))
+    user = UserModel.get_one_user(user_id)
     user.update(data)
     ser_user = user_schema.dump(user).data
     return custom_response(ser_user, 200)
 
 
 @user_api.route('/<int:user_id>', methods=['DELETE'])
-def delete():
+def delete(user_id):
     """
     Delete a user
     """
-    user = UserModel.get_one_user(g.user.get('id'))
+    user = UserModel.get_one_user(user_id)
+    if not user:
+        return custom_response({'error': 'User not found.'}, 404)
     user.delete()
-    return custom_response({'message': 'deleted'}, 204)
+    return custom_response({'result': 'User deleted.'}, 204)
 
 
 def custom_response(res, status_code):

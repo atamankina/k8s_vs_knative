@@ -13,14 +13,14 @@ class RestaurantModel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(128), nullable=False)
-    address = db.Column(db.String(128), unique=True, nullable=False)
+    address = db.Column(db.String(128), nullable=False)
     created_at = db.Column(db.DateTime)
     modified_at = db.Column(db.DateTime)
     reviews = db.relationship('ReviewModel', backref='restaurants', lazy=True)
 
     def __init__(self, data):
-        self.title = data.get('name')
-        self.address = data.get('email')
+        self.title = data.get('title')
+        self.address = data.get('address')
         self.created_at = datetime.datetime.utcnow()
         self.modified_at = datetime.datetime.utcnow()
 
@@ -84,7 +84,7 @@ class RestaurantSchema(Schema):
     """
     id = fields.Int(dump_only=True)
     title = fields.Str(required=True)
-    address = fields.Email(required=True)
+    address = fields.Str(required=True)
     created_at = fields.DateTime(dump_only=True)
     modified_at = fields.DateTime(dump_only=True)
     reviews = fields.Nested(ReviewSchema, many=True)

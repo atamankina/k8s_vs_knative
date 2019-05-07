@@ -16,12 +16,6 @@ def create():
     if error:
         return custom_response(error, 400)
 
-    # check if restaurant already exist in the db
-    restaurant_in_db = RestaurantModel.get_restaurant_by_title(data.get('title'))
-    if restaurant_in_db:
-        message = {'error': 'Restaurant with this title already exists.'}
-        return custom_response(message, 400)
-
     restaurant = RestaurantModel(data)
     restaurant.create()
 
@@ -32,6 +26,10 @@ def create():
 
 @restaurant_api.route('/', methods=['GET'])
 def get_all():
+    """
+    Get all restaurants.
+    :return: List of all restaurants
+    """
     restaurants = RestaurantModel.get_all_restaurants()
     ser_restaurants = restaurant_schema.dump(restaurants, many=True).data
     return custom_response(ser_restaurants, 200)
@@ -44,14 +42,14 @@ def get_restaurant(restaurant_id):
     """
     restaurant = RestaurantModel.get_one_restaurant(restaurant_id)
     if not restaurant:
-        return custom_response({'error': 'restaurant not found'}, 404)
+        return custom_response({'error': 'Restaurant not found.'}, 404)
 
     ser_restaurant = restaurant_schema.dump(restaurant).data
     return custom_response(ser_restaurant, 200)
 
 
 @restaurant_api.route('/<int:restaurant_id>', methods=['PUT'])
-def update():
+def update(restaurant_id):
     """
     Update a restaurant
     """
@@ -60,18 +58,20 @@ def update():
     if error:
         return custom_response(error, 400)
 
-    restaurant = RestaurantModel.get_one_restaurant(g.restaurant.get('id'))
+    restaurant = RestaurantModel.get_one_restaurant(restaurant_id)
     restaurant.update(data)
     ser_restaurant = restaurant_schema.dump(restaurant).data
     return custom_response(ser_restaurant, 200)
 
 
 @restaurant_api.route('/<int:restaurant_id>', methods=['DELETE'])
-def delete():
+def delete(restaurant_id):
     """
     Delete a restaurant
     """
-    restaurant = RestaurantModel.get_one_restaurant(g.restaurant.get('id'))
+    restaurant = RestaurantModel.get_one_restaurant(restaurant_id)
+    if not restaurant:
+        return custom_response({'error': 'Restaurant not found.'}, 404)
     restaurant.delete()
     return custom_response({'message': 'deleted'}, 204)
 
