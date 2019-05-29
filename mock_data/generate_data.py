@@ -7,8 +7,10 @@ from urllib.parse import urljoin
 
 
 def send_post_request(url, data):
-    response = requests.post(url, data)
-    assert response.status_code == 202
+    response = requests.post(url, json=data)
+    print(url)
+    print(data)
+    print(response.status_code)
 
 
 def generate_users(base_url):
