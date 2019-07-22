@@ -9,6 +9,12 @@ gunicorn --bind 0.0.0.0:5000 --workers=4 wsgi:app
 docker build -t atamankina/reviews:latest .
 docker push atamankina/reviews:latest
 
+docker build -t atamankina/reviews-knative:latest .
+docker push atamankina/reviews-knative:latest
+
+docker build -t atamankina/reviews-k8s:latest .
+docker push atamankina/reviews-k8s:latest
+
 echo -n 'input' | openssl base64
 
 kubectl apply -f namespace.yaml
@@ -17,9 +23,3 @@ kubectl apply -f postgres-deployment.yaml
 kubectl apply -f postgres-service.yaml
 kubectl apply -f app-deployment.yaml
 kubectl apply -f app-service.yaml
-
-
-export KOPS_CLUSTER_NAME=galina.k8s.local
-export KOPS_STATE_STORE=s3://galina-kops-state
-
-aws resourcegroupstaggingapi get-resources --tag-filters "Key=KubernetesCluster,Values=galina.k8s.local"

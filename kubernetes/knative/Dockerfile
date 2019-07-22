@@ -6,11 +6,9 @@ WORKDIR code
 
 RUN rm -Rf migrations
 
-RUN pip install -r requirements.txt
-
-EXPOSE 8080
+RUN pip install --upgrade pip -r requirements.txt
 
 CMD python manage.py db init && \
     python manage.py db migrate && \
     python manage.py db upgrade && \
-    gunicorn --bind 0.0.0.0:8080 --workers=6 wsgi:app
+    gunicorn --bind 0.0.0.0:$PORT --workers=6 wsgi:app

@@ -26,6 +26,6 @@ spec:
           - name: POSTGRES_PASSWORD
             value: password
           - name: POSTGRES_HOST
-            value: restaurant-reviews.cshnmycredb8.us-east-1.rds.amazonaws.com
+            value: reviews.cbzlvkulvgid.us-east-1.rds.amazonaws.com
         ports:
           - containerPort: 5000
