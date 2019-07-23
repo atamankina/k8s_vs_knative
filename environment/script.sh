@@ -23,3 +23,6 @@ kubectl apply -f postgres-deployment.yaml
 kubectl apply -f postgres-service.yaml
 kubectl apply -f app-deployment.yaml
 kubectl apply -f app-service.yaml
+
+locust -f task_sets.py --no-web -c 1000 -r 100 --run-time 1h30m
+locust -f task_sets.py SingleReadSlow

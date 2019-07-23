@@ -27,5 +27,5 @@ spec:
             value: password
           - name: POSTGRES_HOST
             value: reviews.cbzlvkulvgid.us-east-1.rds.amazonaws.com
-        ports:
-          - containerPort: 5000
+          - name: PORT
+            value: '8080'

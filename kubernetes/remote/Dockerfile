@@ -6,7 +6,7 @@ WORKDIR code
 
 RUN rm -Rf migrations
 
-RUN pip install -r requirements.txt
+RUN pip install --upgrade pip -r requirements.txt
 
 EXPOSE 8080
 

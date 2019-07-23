@@ -1,13 +1,20 @@
 #*** before all
 gcloud auth login
 gcloud config set project rosy-sunspot-246115
+gcloud config set project eighth-study-243122
+gcloud config set compute/zone europe-west6-c
 gcloud config get-value project
 gcloud config get-value core/account
+gcloud config get-value compute/zone
+
+#*** finally
+gcloud container clusters delete hello-cluster
 
 #*** 0
 export CLUSTER_NAME=knative-thesis
 export CLUSTER_ZONE=europe-west6-c
 export PROJECT=rosy-sunspot-246115
+export PROJECT=eighth-study-243122
 gcloud config set core/project $PROJECT
 
 #*** 1
