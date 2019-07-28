@@ -3,7 +3,6 @@ import os
 from urllib.parse import urljoin
 from functools import reduce
 
-# ?? should I use random objects or always one object?
 DATA = {
     "title": 'vestibulum velit id pretium iaculis',
     "content": 'Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst.',
@@ -39,19 +38,14 @@ def post_review(l):
     l.client.post(url=REVIEWS_ENDPOINT, json=DATA, headers=HEADERS)
 
 
-# expected quick response
 class ReadOnlyOneObject(TaskSet):
     tasks = [get_one_review]
 
 
-# expected slow response
 class ReadOnlyAllObjects(TaskSet):
     tasks = [get_all_reviews]
 
 
-# random response time - influencing factor - the length of reponse object...
-# possible solution: use predefined set of objects to exclude the randomness
-# of execution in different runs / in different environments
 class ReadOnlyMultipleEndpoints(TaskSet):
     tasks = [get_one_review, get_all_reviews, get_reviews_by_user, get_reviews_by_restaurant]
 
@@ -60,7 +54,6 @@ class WriteOnly(TaskSet):
     tasks = [post_review]
 
 
-# the same concerns as for multiple endpoints
 class ReadWrite(TaskSet):
     tasks = {get_one_review: 5, get_all_reviews: 1,
              get_reviews_by_user: 1, get_reviews_by_restaurant: 3,
@@ -73,19 +66,19 @@ class FastUser(HttpLocust):
     max_wait = 1000
 
 
-class SingleRead(FastUser):
+class ReadSingleObject(FastUser):
     task_set = ReadOnlyOneObject
 
 
-class ReadAll(FastUser):
+class ReadAllObjects(FastUser):
     task_set = ReadOnlyAllObjects
 
 
-class ReadMultiple(FastUser):
+class ReadMultipleEndpoints(FastUser):
     task_set = ReadOnlyMultipleEndpoints
 
 
-class SingleWrite(FastUser):
+class WriteObject(FastUser):
     task_set = WriteOnly
 
 
@@ -95,8 +88,8 @@ class MultipleReadWrite(FastUser):
 
 class SlowUser(HttpLocust):
     host = BASE_URL
-    min_wait = 60000 * 10
-    max_wait = 60000 * 10
+    min_wait = 600000
+    max_wait = 600000
 
 
 class SingleReadSlow(SlowUser):
