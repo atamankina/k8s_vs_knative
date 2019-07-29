@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: reviews-app-webserver
-  namespace: galina-test
+  namespace: k8s-test
 spec:
   ports:
     - port: 8080

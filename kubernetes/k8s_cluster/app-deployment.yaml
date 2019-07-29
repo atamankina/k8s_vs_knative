@@ -2,7 +2,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: reviews-app-webserver
-  namespace: galina-test
+  namespace: k8s-test
   labels:
     app: reviews-app
 spec:
