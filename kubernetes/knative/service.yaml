@@ -7,7 +7,7 @@ spec:
   template:
     spec:
       containers:
-        - image: atamankina/reviews-knative:latest
+        - image: atamankina/reviews:latest
           env:
             - name: FLASK_ENV
               value: development

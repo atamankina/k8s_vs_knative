@@ -8,10 +8,11 @@ gcloud config get-value core/account
 gcloud config get-value compute/zone
 
 #*** finally
-gcloud container clusters delete hello-cluster
+gcloud container clusters delete $CLUSTER_NAME
 
 #*** 0
 export CLUSTER_NAME=knative-thesis
+export CLUSTER_NAME=k8s-thesis
 export CLUSTER_ZONE=europe-west6-c
 export PROJECT=rosy-sunspot-246115
 export PROJECT=eighth-study-243122
@@ -23,7 +24,7 @@ gcloud beta container clusters create $CLUSTER_NAME \
   --machine-type=n1-standard-2 \
   --cluster-version=latest --zone=$CLUSTER_ZONE \
   --enable-stackdriver-kubernetes --enable-ip-alias \
-  --enable-autoscaling --min-nodes=1 --max-nodes=5 \
+  --enable-autoscaling --min-nodes=1 --max-nodes=3 \
   --enable-autorepair \
   --scopes cloud-platform
 

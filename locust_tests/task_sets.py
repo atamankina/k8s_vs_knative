@@ -88,8 +88,8 @@ class MultipleReadWrite(FastUser):
 
 class SlowUser(HttpLocust):
     host = BASE_URL
-    min_wait = 600000
-    max_wait = 600000
+    min_wait = 8*60*1000
+    max_wait = 10*60*1000
 
 
 class SingleReadSlow(SlowUser):

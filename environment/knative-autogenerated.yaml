@@ -1,0 +1,893 @@
+### Pod spec
+
+kind: Pod
+apiVersion: v1
+metadata:
+  name: reviews-app-webserver-nn6l9-deployment-9c4ff966c-5gchh
+  generateName: reviews-app-webserver-nn6l9-deployment-9c4ff966c-
+  namespace: default
+  selfLink: >-
+    /api/v1/namespaces/default/pods/reviews-app-webserver-nn6l9-deployment-9c4ff966c-5gchh
+  uid: 6f323184-b18a-11e9-9050-42010aac0027
+  resourceVersion: '5196'
+  creationTimestamp: '2019-07-28T22:52:54Z'
+  labels:
+    app: reviews-app-webserver-nn6l9
+    pod-template-hash: 9c4ff966c
+    serving.knative.dev/configuration: reviews-app-webserver
+    serving.knative.dev/configurationGeneration: '1'
+    serving.knative.dev/revision: reviews-app-webserver-nn6l9
+    serving.knative.dev/revisionUID: 6eaf36b7-b18a-11e9-9050-42010aac0027
+    serving.knative.dev/service: reviews-app-webserver
+  annotations:
+    kubernetes.io/limit-ranger: 'LimitRanger plugin set: cpu request for container user-container'
+    sidecar.istio.io/inject: 'true'
+    traffic.sidecar.istio.io/includeOutboundIPRanges: '*'
+  ownerReferences:
+    - apiVersion: apps/v1
+      kind: ReplicaSet
+      name: reviews-app-webserver-nn6l9-deployment-9c4ff966c
+      uid: 6f250f8d-b18a-11e9-9050-42010aac0027
+      controller: true
+      blockOwnerDeletion: true
+spec:
+  volumes:
+    - name: knative-var-log
+      emptyDir: {}
+    - name: default-token-f64wr
+      secret:
+        secretName: default-token-f64wr
+        defaultMode: 420
+  containers:
+    - name: user-container
+      image: >-
+        index.docker.io/atamankina/reviews@sha256:6ad0568f86b84cf5fb63d8764b38dc1bf1b3df118cb3a8cf600a82df4cdd7a6f
+      ports:
+        - name: user-port
+          containerPort: 8080
+          protocol: TCP
+      env:
+        - name: FLASK_ENV
+          value: development
+        - name: POSTGRES_DB
+          value: reviews
+        - name: POSTGRES_USER
+          value: galina
+        - name: POSTGRES_PASSWORD
+          value: password
+        - name: POSTGRES_HOST
+          value: reviews.cbzlvkulvgid.us-east-1.rds.amazonaws.com
+        - name: PORT
+          value: '8080'
+        - name: K_REVISION
+          value: reviews-app-webserver-nn6l9
+        - name: K_CONFIGURATION
+          value: reviews-app-webserver
+        - name: K_SERVICE
+          value: reviews-app-webserver
+      resources:
+        requests:
+          cpu: 100m
+      volumeMounts:
+        - name: knative-var-log
+          mountPath: /var/log
+        - name: default-token-f64wr
+          readOnly: true
+          mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      lifecycle:
+        preStop:
+          httpGet:
+            path: /wait-for-drain
+            port: 8022
+            scheme: HTTP
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: FallbackToLogsOnError
+      imagePullPolicy: IfNotPresent
+    - name: queue-proxy
+      image: >-
+        gcr.io/knative-releases/github.com/knative/serving/cmd/queue@sha256:e007c0a78c541600466f88954deee65c517246a23345bfba45a7f212d09b8f3b
+      ports:
+        - name: queueadm-port
+          containerPort: 8022
+          protocol: TCP
+        - name: queue-metrics
+          containerPort: 9090
+          protocol: TCP
+        - name: user-metrics
+          containerPort: 9091
+          protocol: TCP
+        - name: queue-port
+          containerPort: 8012
+          protocol: TCP
+      env:
+        - name: SERVING_NAMESPACE
+          value: default
+        - name: SERVING_SERVICE
+          value: reviews-app-webserver
+        - name: SERVING_CONFIGURATION
+          value: reviews-app-webserver
+        - name: SERVING_REVISION
+          value: reviews-app-webserver-nn6l9
+        - name: QUEUE_SERVING_PORT
+          value: '8012'
+        - name: CONTAINER_CONCURRENCY
+          value: '0'
+        - name: REVISION_TIMEOUT_SECONDS
+          value: '300'
+        - name: SERVING_POD
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: SERVING_POD_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: SERVING_LOGGING_CONFIG
+          value: |-
+            {
+              "level": "info",
+              "development": false,
+              "outputPaths": ["stdout"],
+              "errorOutputPaths": ["stderr"],
+              "encoding": "json",
+              "encoderConfig": {
+                "timeKey": "ts",
+                "levelKey": "level",
+                "nameKey": "logger",
+                "callerKey": "caller",
+                "messageKey": "msg",
+                "stacktraceKey": "stacktrace",
+                "lineEnding": "",
+                "levelEncoder": "",
+                "timeEncoder": "iso8601",
+                "durationEncoder": "",
+                "callerEncoder": ""
+              }
+            }
+        - name: SERVING_LOGGING_LEVEL
+        - name: SERVING_REQUEST_LOG_TEMPLATE
+        - name: SERVING_REQUEST_METRICS_BACKEND
+        - name: USER_PORT
+          value: '8080'
+        - name: SYSTEM_NAMESPACE
+          value: knative-serving
+        - name: METRICS_DOMAIN
+          value: knative.dev/serving
+        - name: USER_CONTAINER_NAME
+          value: user-container
+        - name: ENABLE_VAR_LOG_COLLECTION
+          value: 'false'
+        - name: VAR_LOG_VOLUME_NAME
+          value: knative-var-log
+        - name: INTERNAL_VOLUME_PATH
+          value: /var/knative-internal
+      resources:
+        requests:
+          cpu: 25m
+      volumeMounts:
+        - name: default-token-f64wr
+          readOnly: true
+          mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      readinessProbe:
+        httpGet:
+          path: /health
+          port: 8022
+          scheme: HTTP
+        timeoutSeconds: 10
+        periodSeconds: 1
+        successThreshold: 1
+        failureThreshold: 3
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        allowPrivilegeEscalation: false
+  restartPolicy: Always
+  terminationGracePeriodSeconds: 300
+  dnsPolicy: ClusterFirst
+  serviceAccountName: default
+  serviceAccount: default
+  nodeName: gke-knative-thesis-default-pool-4bd11fa8-hg5m
+  securityContext: {}
+  schedulerName: default-scheduler
+  tolerations:
+    - key: node.kubernetes.io/not-ready
+      operator: Exists
+      effect: NoExecute
+      tolerationSeconds: 300
+    - key: node.kubernetes.io/unreachable
+      operator: Exists
+      effect: NoExecute
+      tolerationSeconds: 300
+  priority: 0
+  enableServiceLinks: true
+status:
+  phase: Running
+  conditions:
+    - type: Initialized
+      status: 'True'
+      lastProbeTime: null
+      lastTransitionTime: '2019-07-28T22:52:54Z'
+    - type: Ready
+      status: 'True'
+      lastProbeTime: null
+      lastTransitionTime: '2019-07-28T22:53:38Z'
+    - type: ContainersReady
+      status: 'True'
+      lastProbeTime: null
+      lastTransitionTime: '2019-07-28T22:53:38Z'
+    - type: PodScheduled
+      status: 'True'
+      lastProbeTime: null
+      lastTransitionTime: '2019-07-28T22:52:54Z'
+  hostIP: 10.172.0.31
+  podIP: 10.48.0.14
+  startTime: '2019-07-28T22:52:54Z'
+  containerStatuses:
+    - name: queue-proxy
+      state:
+        running:
+          startedAt: '2019-07-28T22:53:28Z'
+      lastState: {}
+      ready: true
+      restartCount: 0
+      image: 'sha256:aaa9f594659d968127810c5487cf92b23e7d39aa2e7b73a2b8407bfc3c105990'
+      imageID: >-
+        docker-pullable://gcr.io/knative-releases/github.com/knative/serving/cmd/queue@sha256:e007c0a78c541600466f88954deee65c517246a23345bfba45a7f212d09b8f3b
+      containerID: >-
+        docker://2aeb040e54b936c2a84708acf6736d6c9347100084f87bae7d177a8997f9e2dc
+    - name: user-container
+      state:
+        running:
+          startedAt: '2019-07-28T22:53:27Z'
+      lastState: {}
+      ready: true
+      restartCount: 0
+      image: >-
+        atamankina/reviews@sha256:6ad0568f86b84cf5fb63d8764b38dc1bf1b3df118cb3a8cf600a82df4cdd7a6f
+      imageID: >-
+        docker-pullable://atamankina/reviews@sha256:6ad0568f86b84cf5fb63d8764b38dc1bf1b3df118cb3a8cf600a82df4cdd7a6f
+      containerID: >-
+        docker://8b04f2db1fc38aac1c54a8bcc3671699a3ae9eb75cae3ac0141fafb691dbf02b
+  qosClass: Burstable
+
+
+
+#### updated
+kind: Pod
+apiVersion: v1
+metadata:
+  name: reviews-app-webserver-nn6l9-deployment-9c4ff966c-5gchh
+  generateName: reviews-app-webserver-nn6l9-deployment-9c4ff966c-
+  namespace: default
+  selfLink: >-
+    /api/v1/namespaces/default/pods/reviews-app-webserver-nn6l9-deployment-9c4ff966c-5gchh
+  uid: 6f323184-b18a-11e9-9050-42010aac0027
+  resourceVersion: '5628'
+  creationTimestamp: '2019-07-28T22:52:54Z'
+  deletionTimestamp: '2019-07-28T23:00:12Z'
+  deletionGracePeriodSeconds: 300
+  labels:
+    app: reviews-app-webserver-nn6l9
+    pod-template-hash: 9c4ff966c
+    serving.knative.dev/configuration: reviews-app-webserver
+    serving.knative.dev/configurationGeneration: '1'
+    serving.knative.dev/revision: reviews-app-webserver-nn6l9
+    serving.knative.dev/revisionUID: 6eaf36b7-b18a-11e9-9050-42010aac0027
+    serving.knative.dev/service: reviews-app-webserver
+  annotations:
+    kubernetes.io/limit-ranger: 'LimitRanger plugin set: cpu request for container user-container'
+    sidecar.istio.io/inject: 'true'
+    traffic.sidecar.istio.io/includeOutboundIPRanges: '*'
+  ownerReferences:
+    - apiVersion: apps/v1
+      kind: ReplicaSet
+      name: reviews-app-webserver-nn6l9-deployment-9c4ff966c
+      uid: 6f250f8d-b18a-11e9-9050-42010aac0027
+      controller: true
+      blockOwnerDeletion: true
+spec:
+  volumes:
+    - name: knative-var-log
+      emptyDir: {}
+    - name: default-token-f64wr
+      secret:
+        secretName: default-token-f64wr
+        defaultMode: 420
+  containers:
+    - name: user-container
+      image: >-
+        index.docker.io/atamankina/reviews@sha256:6ad0568f86b84cf5fb63d8764b38dc1bf1b3df118cb3a8cf600a82df4cdd7a6f
+      ports:
+        - name: user-port
+          containerPort: 8080
+          protocol: TCP
+      env:
+        - name: FLASK_ENV
+          value: development
+        - name: POSTGRES_DB
+          value: reviews
+        - name: POSTGRES_USER
+          value: galina
+        - name: POSTGRES_PASSWORD
+          value: password
+        - name: POSTGRES_HOST
+          value: reviews.cbzlvkulvgid.us-east-1.rds.amazonaws.com
+        - name: PORT
+          value: '8080'
+        - name: K_REVISION
+          value: reviews-app-webserver-nn6l9
+        - name: K_CONFIGURATION
+          value: reviews-app-webserver
+        - name: K_SERVICE
+          value: reviews-app-webserver
+      resources:
+        requests:
+          cpu: 100m
+      volumeMounts:
+        - name: knative-var-log
+          mountPath: /var/log
+        - name: default-token-f64wr
+          readOnly: true
+          mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      lifecycle:
+        preStop:
+          httpGet:
+            path: /wait-for-drain
+            port: 8022
+            scheme: HTTP
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: FallbackToLogsOnError
+      imagePullPolicy: IfNotPresent
+    - name: queue-proxy
+      image: >-
+        gcr.io/knative-releases/github.com/knative/serving/cmd/queue@sha256:e007c0a78c541600466f88954deee65c517246a23345bfba45a7f212d09b8f3b
+      ports:
+        - name: queueadm-port
+          containerPort: 8022
+          protocol: TCP
+        - name: queue-metrics
+          containerPort: 9090
+          protocol: TCP
+        - name: user-metrics
+          containerPort: 9091
+          protocol: TCP
+        - name: queue-port
+          containerPort: 8012
+          protocol: TCP
+      env:
+        - name: SERVING_NAMESPACE
+          value: default
+        - name: SERVING_SERVICE
+          value: reviews-app-webserver
+        - name: SERVING_CONFIGURATION
+          value: reviews-app-webserver
+        - name: SERVING_REVISION
+          value: reviews-app-webserver-nn6l9
+        - name: QUEUE_SERVING_PORT
+          value: '8012'
+        - name: CONTAINER_CONCURRENCY
+          value: '0'
+        - name: REVISION_TIMEOUT_SECONDS
+          value: '300'
+        - name: SERVING_POD
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: SERVING_POD_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: SERVING_LOGGING_CONFIG
+          value: |-
+            {
+              "level": "info",
+              "development": false,
+              "outputPaths": ["stdout"],
+              "errorOutputPaths": ["stderr"],
+              "encoding": "json",
+              "encoderConfig": {
+                "timeKey": "ts",
+                "levelKey": "level",
+                "nameKey": "logger",
+                "callerKey": "caller",
+                "messageKey": "msg",
+                "stacktraceKey": "stacktrace",
+                "lineEnding": "",
+                "levelEncoder": "",
+                "timeEncoder": "iso8601",
+                "durationEncoder": "",
+                "callerEncoder": ""
+              }
+            }
+        - name: SERVING_LOGGING_LEVEL
+        - name: SERVING_REQUEST_LOG_TEMPLATE
+        - name: SERVING_REQUEST_METRICS_BACKEND
+        - name: USER_PORT
+          value: '8080'
+        - name: SYSTEM_NAMESPACE
+          value: knative-serving
+        - name: METRICS_DOMAIN
+          value: knative.dev/serving
+        - name: USER_CONTAINER_NAME
+          value: user-container
+        - name: ENABLE_VAR_LOG_COLLECTION
+          value: 'false'
+        - name: VAR_LOG_VOLUME_NAME
+          value: knative-var-log
+        - name: INTERNAL_VOLUME_PATH
+          value: /var/knative-internal
+      resources:
+        requests:
+          cpu: 25m
+      volumeMounts:
+        - name: default-token-f64wr
+          readOnly: true
+          mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      readinessProbe:
+        httpGet:
+          path: /health
+          port: 8022
+          scheme: HTTP
+        timeoutSeconds: 10
+        periodSeconds: 1
+        successThreshold: 1
+        failureThreshold: 3
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        allowPrivilegeEscalation: false
+  restartPolicy: Always
+  terminationGracePeriodSeconds: 300
+  dnsPolicy: ClusterFirst
+  serviceAccountName: default
+  serviceAccount: default
+  nodeName: gke-knative-thesis-default-pool-4bd11fa8-hg5m
+  securityContext: {}
+  schedulerName: default-scheduler
+  tolerations:
+    - key: node.kubernetes.io/not-ready
+      operator: Exists
+      effect: NoExecute
+      tolerationSeconds: 300
+    - key: node.kubernetes.io/unreachable
+      operator: Exists
+      effect: NoExecute
+      tolerationSeconds: 300
+  priority: 0
+  enableServiceLinks: true
+status:
+  phase: Running
+  conditions:
+    - type: Initialized
+      status: 'True'
+      lastProbeTime: null
+      lastTransitionTime: '2019-07-28T22:52:54Z'
+    - type: Ready
+      status: 'False'
+      lastProbeTime: null
+      lastTransitionTime: '2019-07-28T22:55:15Z'
+      reason: ContainersNotReady
+      message: 'containers with unready status: [queue-proxy]'
+    - type: ContainersReady
+      status: 'False'
+      lastProbeTime: null
+      lastTransitionTime: '2019-07-28T22:55:15Z'
+      reason: ContainersNotReady
+      message: 'containers with unready status: [queue-proxy]'
+    - type: PodScheduled
+      status: 'True'
+      lastProbeTime: null
+      lastTransitionTime: '2019-07-28T22:52:54Z'
+  hostIP: 10.172.0.31
+  podIP: 10.48.0.14
+  startTime: '2019-07-28T22:52:54Z'
+  containerStatuses:
+    - name: queue-proxy
+      state:
+        running:
+          startedAt: '2019-07-28T22:53:28Z'
+      lastState: {}
+      ready: false
+      restartCount: 0
+      image: 'sha256:aaa9f594659d968127810c5487cf92b23e7d39aa2e7b73a2b8407bfc3c105990'
+      imageID: >-
+        docker-pullable://gcr.io/knative-releases/github.com/knative/serving/cmd/queue@sha256:e007c0a78c541600466f88954deee65c517246a23345bfba45a7f212d09b8f3b
+      containerID: >-
+        docker://2aeb040e54b936c2a84708acf6736d6c9347100084f87bae7d177a8997f9e2dc
+    - name: user-container
+      state:
+        running:
+          startedAt: '2019-07-28T22:53:27Z'
+      lastState: {}
+      ready: true
+      restartCount: 0
+      image: >-
+        atamankina/reviews@sha256:6ad0568f86b84cf5fb63d8764b38dc1bf1b3df118cb3a8cf600a82df4cdd7a6f
+      imageID: >-
+        docker-pullable://atamankina/reviews@sha256:6ad0568f86b84cf5fb63d8764b38dc1bf1b3df118cb3a8cf600a82df4cdd7a6f
+      containerID: >-
+        docker://8b04f2db1fc38aac1c54a8bcc3671699a3ae9eb75cae3ac0141fafb691dbf02b
+  qosClass: Burstable
+
+### Deployment Spec
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: reviews-app-webserver-nn6l9-deployment
+  namespace: default
+  selfLink: >-
+    /apis/extensions/v1beta1/namespaces/default/deployments/reviews-app-webserver-nn6l9-deployment
+  uid: 6f208b3d-b18a-11e9-9050-42010aac0027
+  resourceVersion: '10354'
+  generation: 6
+  creationTimestamp: '2019-07-28T22:52:53Z'
+  labels:
+    app: reviews-app-webserver-nn6l9
+    serving.knative.dev/configuration: reviews-app-webserver
+    serving.knative.dev/configurationGeneration: '1'
+    serving.knative.dev/revision: reviews-app-webserver-nn6l9
+    serving.knative.dev/revisionUID: 6eaf36b7-b18a-11e9-9050-42010aac0027
+    serving.knative.dev/service: reviews-app-webserver
+  annotations:
+    deployment.kubernetes.io/revision: '1'
+  ownerReferences:
+    - apiVersion: serving.knative.dev/v1alpha1
+      kind: Revision
+      name: reviews-app-webserver-nn6l9
+      uid: 6eaf36b7-b18a-11e9-9050-42010aac0027
+      controller: true
+      blockOwnerDeletion: true
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      serving.knative.dev/revisionUID: 6eaf36b7-b18a-11e9-9050-42010aac0027
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: reviews-app-webserver-nn6l9
+        serving.knative.dev/configuration: reviews-app-webserver
+        serving.knative.dev/configurationGeneration: '1'
+        serving.knative.dev/revision: reviews-app-webserver-nn6l9
+        serving.knative.dev/revisionUID: 6eaf36b7-b18a-11e9-9050-42010aac0027
+        serving.knative.dev/service: reviews-app-webserver
+      annotations:
+        sidecar.istio.io/inject: 'true'
+        traffic.sidecar.istio.io/includeOutboundIPRanges: '*'
+    spec:
+      volumes:
+        - name: knative-var-log
+          emptyDir: {}
+      containers:
+        - name: user-container
+          image: >-
+            index.docker.io/atamankina/reviews@sha256:6ad0568f86b84cf5fb63d8764b38dc1bf1b3df118cb3a8cf600a82df4cdd7a6f
+          ports:
+            - name: user-port
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: FLASK_ENV
+              value: development
+            - name: POSTGRES_DB
+              value: reviews
+            - name: POSTGRES_USER
+              value: galina
+            - name: POSTGRES_PASSWORD
+              value: password
+            - name: POSTGRES_HOST
+              value: reviews.cbzlvkulvgid.us-east-1.rds.amazonaws.com
+            - name: PORT
+              value: '8080'
+            - name: K_REVISION
+              value: reviews-app-webserver-nn6l9
+            - name: K_CONFIGURATION
+              value: reviews-app-webserver
+            - name: K_SERVICE
+              value: reviews-app-webserver
+          resources: {}
+          volumeMounts:
+            - name: knative-var-log
+              mountPath: /var/log
+          lifecycle:
+            preStop:
+              httpGet:
+                path: /wait-for-drain
+                port: 8022
+                scheme: HTTP
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: FallbackToLogsOnError
+          imagePullPolicy: IfNotPresent
+        - name: queue-proxy
+          image: >-
+            gcr.io/knative-releases/github.com/knative/serving/cmd/queue@sha256:e007c0a78c541600466f88954deee65c517246a23345bfba45a7f212d09b8f3b
+          ports:
+            - name: queueadm-port
+              containerPort: 8022
+              protocol: TCP
+            - name: queue-metrics
+              containerPort: 9090
+              protocol: TCP
+            - name: user-metrics
+              containerPort: 9091
+              protocol: TCP
+            - name: queue-port
+              containerPort: 8012
+              protocol: TCP
+          env:
+            - name: SERVING_NAMESPACE
+              value: default
+            - name: SERVING_SERVICE
+              value: reviews-app-webserver
+            - name: SERVING_CONFIGURATION
+              value: reviews-app-webserver
+            - name: SERVING_REVISION
+              value: reviews-app-webserver-nn6l9
+            - name: QUEUE_SERVING_PORT
+              value: '8012'
+            - name: CONTAINER_CONCURRENCY
+              value: '0'
+            - name: REVISION_TIMEOUT_SECONDS
+              value: '300'
+            - name: SERVING_POD
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: SERVING_POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: SERVING_LOGGING_CONFIG
+              value: |-
+                {
+                  "level": "info",
+                  "development": false,
+                  "outputPaths": ["stdout"],
+                  "errorOutputPaths": ["stderr"],
+                  "encoding": "json",
+                  "encoderConfig": {
+                    "timeKey": "ts",
+                    "levelKey": "level",
+                    "nameKey": "logger",
+                    "callerKey": "caller",
+                    "messageKey": "msg",
+                    "stacktraceKey": "stacktrace",
+                    "lineEnding": "",
+                    "levelEncoder": "",
+                    "timeEncoder": "iso8601",
+                    "durationEncoder": "",
+                    "callerEncoder": ""
+                  }
+                }
+            - name: SERVING_LOGGING_LEVEL
+            - name: SERVING_REQUEST_LOG_TEMPLATE
+            - name: SERVING_REQUEST_METRICS_BACKEND
+            - name: USER_PORT
+              value: '8080'
+            - name: SYSTEM_NAMESPACE
+              value: knative-serving
+            - name: METRICS_DOMAIN
+              value: knative.dev/serving
+            - name: USER_CONTAINER_NAME
+              value: user-container
+            - name: ENABLE_VAR_LOG_COLLECTION
+              value: 'false'
+            - name: VAR_LOG_VOLUME_NAME
+              value: knative-var-log
+            - name: INTERNAL_VOLUME_PATH
+              value: /var/knative-internal
+          resources:
+            requests:
+              cpu: 25m
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8022
+              scheme: HTTP
+            timeoutSeconds: 10
+            periodSeconds: 1
+            successThreshold: 1
+            failureThreshold: 3
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 300
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 120
+status:
+  observedGeneration: 6
+  conditions:
+    - type: Progressing
+      status: 'True'
+      lastUpdateTime: '2019-07-28T22:53:38Z'
+      lastTransitionTime: '2019-07-28T22:52:53Z'
+      reason: NewReplicaSetAvailable
+      message: >-
+        ReplicaSet "reviews-app-webserver-nn6l9-deployment-9c4ff966c" has
+        successfully progressed.
+    - type: Available
+      status: 'True'
+      lastUpdateTime: '2019-07-28T23:09:06Z'
+      lastTransitionTime: '2019-07-28T23:09:06Z'
+      reason: MinimumReplicasAvailable
+      message: Deployment has minimum availability.
+
+
+### Service spec
+kind: Service
+apiVersion: v1
+metadata:
+  name: reviews-app-webserver
+  namespace: default
+  selfLink: /api/v1/namespaces/default/services/reviews-app-webserver
+  uid: 89d3bef4-b18a-11e9-9050-42010aac0027
+  resourceVersion: '5222'
+  creationTimestamp: '2019-07-28T22:53:38Z'
+  labels:
+    serving.knative.dev/route: reviews-app-webserver
+  ownerReferences:
+    - apiVersion: serving.knative.dev/v1alpha1
+      kind: Route
+      name: reviews-app-webserver
+      uid: 6eb10f28-b18a-11e9-9050-42010aac0027
+      controller: true
+      blockOwnerDeletion: true
+spec:
+  type: ExternalName
+  sessionAffinity: None
+  externalName: istio-ingressgateway.istio-system.svc.cluster.local
+status:
+  loadBalancer: {}
+
+### Service spec 2
+kind: Service
+apiVersion: v1
+metadata:
+  name: reviews-app-webserver-nn6l9
+  namespace: default
+  selfLink: /api/v1/namespaces/default/services/reviews-app-webserver-nn6l9
+  uid: 6f6db719-b18a-11e9-9050-42010aac0027
+  resourceVersion: '5010'
+  creationTimestamp: '2019-07-28T22:52:54Z'
+  labels:
+    app: reviews-app-webserver-nn6l9
+    networking.internal.knative.dev/serverlessservice: reviews-app-webserver-nn6l9
+    networking.internal.knative.dev/serviceType: Public
+    serving.knative.dev/configuration: reviews-app-webserver
+    serving.knative.dev/configurationGeneration: '1'
+    serving.knative.dev/revision: reviews-app-webserver-nn6l9
+    serving.knative.dev/revisionUID: 6eaf36b7-b18a-11e9-9050-42010aac0027
+    serving.knative.dev/service: reviews-app-webserver
+  annotations:
+    autoscaling.knative.dev/class: kpa.autoscaling.knative.dev
+  ownerReferences:
+    - apiVersion: networking.internal.knative.dev/v1alpha1
+      kind: ServerlessService
+      name: reviews-app-webserver-nn6l9
+      uid: 6f52a9c1-b18a-11e9-9050-42010aac0027
+      controller: true
+      blockOwnerDeletion: true
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8012
+  clusterIP: 10.0.11.151
+  type: ClusterIP
+  sessionAffinity: None
+status:
+  loadBalancer: {}
+
+
+### Service spec 3
+kind: Service
+apiVersion: v1
+metadata:
+  name: reviews-app-webserver-nn6l9-28mwl
+  generateName: reviews-app-webserver-nn6l9-
+  namespace: default
+  selfLink: /api/v1/namespaces/default/services/reviews-app-webserver-nn6l9-28mwl
+  uid: 6f6129ea-b18a-11e9-9050-42010aac0027
+  resourceVersion: '5004'
+  creationTimestamp: '2019-07-28T22:52:54Z'
+  labels:
+    app: reviews-app-webserver-nn6l9
+    networking.internal.knative.dev/serverlessservice: reviews-app-webserver-nn6l9
+    networking.internal.knative.dev/serviceType: Private
+    serving.knative.dev/configuration: reviews-app-webserver
+    serving.knative.dev/configurationGeneration: '1'
+    serving.knative.dev/revision: reviews-app-webserver-nn6l9
+    serving.knative.dev/revisionUID: 6eaf36b7-b18a-11e9-9050-42010aac0027
+    serving.knative.dev/service: reviews-app-webserver
+  annotations:
+    autoscaling.knative.dev/class: kpa.autoscaling.knative.dev
+  ownerReferences:
+    - apiVersion: networking.internal.knative.dev/v1alpha1
+      kind: ServerlessService
+      name: reviews-app-webserver-nn6l9
+      uid: 6f52a9c1-b18a-11e9-9050-42010aac0027
+      controller: true
+      blockOwnerDeletion: true
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8012
+  selector:
+    serving.knative.dev/revisionUID: 6eaf36b7-b18a-11e9-9050-42010aac0027
+  clusterIP: 10.0.9.99
+  type: ClusterIP
+  sessionAffinity: None
+status:
+  loadBalancer: {}
+
+
+### Service spec 4
+kind: Service
+apiVersion: v1
+metadata:
+  name: reviews-app-webserver-nn6l9-tqgrl
+  generateName: reviews-app-webserver-nn6l9-
+  namespace: default
+  selfLink: /api/v1/namespaces/default/services/reviews-app-webserver-nn6l9-tqgrl
+  uid: 6f34235d-b18a-11e9-9050-42010aac0027
+  resourceVersion: '4993'
+  creationTimestamp: '2019-07-28T22:52:54Z'
+  labels:
+    app: reviews-app-webserver-nn6l9
+    autoscaling.knative.dev/kpa: reviews-app-webserver-nn6l9
+    networking.internal.knative.dev/serviceType: Metrics
+    serving.knative.dev/configuration: reviews-app-webserver
+    serving.knative.dev/configurationGeneration: '1'
+    serving.knative.dev/revision: reviews-app-webserver-nn6l9
+    serving.knative.dev/revisionUID: 6eaf36b7-b18a-11e9-9050-42010aac0027
+    serving.knative.dev/service: reviews-app-webserver
+  annotations:
+    autoscaling.knative.dev/class: kpa.autoscaling.knative.dev
+    autoscaling.knative.dev/metric: concurrency
+  ownerReferences:
+    - apiVersion: autoscaling.internal.knative.dev/v1alpha1
+      kind: PodAutoscaler
+      name: reviews-app-webserver-nn6l9
+      uid: 6f2b5dab-b18a-11e9-9050-42010aac0027
+      controller: true
+      blockOwnerDeletion: true
+spec:
+  ports:
+    - name: metrics
+      protocol: TCP
+      port: 9090
+      targetPort: queue-metrics
+    - name: user-metrics
+      protocol: TCP
+      port: 9091
+      targetPort: user-metrics
+  selector:
+    serving.knative.dev/revisionUID: 6eaf36b7-b18a-11e9-9050-42010aac0027
+  clusterIP: 10.0.14.127
+  type: ClusterIP
+  sessionAffinity: None
+status:
+  loadBalancer: {}

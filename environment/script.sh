@@ -24,5 +24,9 @@ kubectl apply -f postgres-service.yaml
 kubectl apply -f app-deployment.yaml
 kubectl apply -f app-service.yaml
 
+kubectl get service -n k8s-test
+
+kubectl autoscale deployment reviews-app-webserver -n k8s-test --cpu-percent=45 --min=2 --max=10
+
 locust -f task_sets.py --no-web -c 1000 -r 100 --run-time 1h30m
 locust -f task_sets.py SingleReadSlow
