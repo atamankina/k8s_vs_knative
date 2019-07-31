@@ -1,6 +1,7 @@
 LOCUST = locust -f task_sets.py
 #CSV_PREFIX = knative
-CSV_PREFIX = k8s
+#CSV_PREFIX = k8s
+CSV_PREFIX = hpa
 RATE_1 = --clients=1 --hatch-rate=0.016 --no-web -t 60m
 RATE_2 = -c 100 -r 10 --no-web -t 5m
 RATE_2A = -c 250 -r 25 --no-web -t 5m
