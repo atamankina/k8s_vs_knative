@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+export FLASK_ENV=development
+export DATABASE_URL=postgres://atamanki:@localhost:5432/restaurant_reviews
+export SECRET_KEY=123
+
 pip install -r requirements.txt
 python manage.py db init
 python manage.py db migrate
@@ -9,18 +13,9 @@ gunicorn --bind 0.0.0.0:5000 --workers=4 wsgi:app
 docker build -t atamankina/reviews:latest .
 docker push atamankina/reviews:latest
 
-docker build -t atamankina/reviews-knative:latest .
-docker push atamankina/reviews-knative:latest
-
-docker build -t atamankina/reviews-k8s:latest .
-docker push atamankina/reviews-k8s:latest
-
 echo -n 'input' | openssl base64
 
 kubectl apply -f namespace.yaml
-kubectl apply -f postgres-credentials.yaml
-kubectl apply -f postgres-deployment.yaml
-kubectl apply -f postgres-service.yaml
 kubectl apply -f app-deployment.yaml
 kubectl apply -f app-service.yaml
 

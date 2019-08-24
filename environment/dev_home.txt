@@ -1,3 +1,0 @@
-export FLASK_ENV=development
-export DATABASE_URL=postgres://galina:@localhost:5432/restaurant_reviews
-export SECRET_KEY=123
