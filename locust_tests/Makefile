@@ -2,13 +2,21 @@ LOCUST = locust -f task_sets.py
 #CSV_PREFIX = knative
 #CSV_PREFIX = k8s
 CSV_PREFIX = hpa
-RATE_1 = --clients=1 --hatch-rate=0.016 --no-web -t 60m
+RATE_1 = --clients=1 --hatch-rate=1 --no-web -t 60m
 RATE_2 = -c 100 -r 10 --no-web -t 5m
 RATE_2A = -c 250 -r 25 --no-web -t 5m
 RATE_3 = -c 500 -r 50 --no-web -t 5m
 RATE_3A = -c 750 -r 5 --no-web -t 5m
 RATE_4 = -c 1000 -r 100 --no-web -t 5m
 
+
+.DEFAULT_GOAL := help
+
+
+help:
+	@echo "Before running the tests, export the BASE_URL environment variable. \n" \
+	"for k8s: http://<IP address>:8080/ \n" \
+	"for knative: http://<IP address>/"
 
 test0:
 	@echo "Running locust pre-test 1."

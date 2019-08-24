@@ -1,6 +1,0 @@
-"Method","Name","# requests","# failures","Median response time","Average response time","Min response time","Max response time","Average Content Size","Requests/s"
-"GET","/reviews/",8643,6295,2000,7822,248,103076,87033,28.85
-"GET","/reviews/10",8728,6441,1900,7124,277,100063,58,29.13
-"GET","/reviews/restaurant/10",8761,6442,1900,7146,237,99293,901,29.24
-"GET","/reviews/user/10",8652,6371,1900,7047,273,104044,848,28.88
-"None","Total",34784,25549,1900,7284,237,104044,22078,116.10
