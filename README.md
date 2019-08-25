@@ -4,7 +4,7 @@
 
 2. To deploy in a cluster, use the `kubernetes/k8s_cluster` folder.
 
-3. To run flask app locally, see `useful_commands/other_commands.sh` to export variables, apply migrations, adn run gunicorn.
+3. To run flask app locally, see `useful_commands/other_commands.sh` to export variables, apply migrations, and run gunicorn.
 
 4. To generate data, run `mock_data/generate_data.py` with the `-u base_url` argument specifying the URL to the app.
 
