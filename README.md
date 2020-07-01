@@ -1,4 +1,4 @@
-# Bachelor Thesis Galina Atamankina
+# Project: Comparison of Microservice Deployments on Kubernetes vs. Kubernetes+Knative
 
 1. To deploy to minikube, use the `kubernetes/local` folder.
 
